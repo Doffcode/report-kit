@@ -106,7 +106,8 @@ ok "Python packages"
 
 step "Grammar checker (LanguageTool) and Java"
 fetch_tar "https://languagetool.org/download/LanguageTool-$LT.zip" "LanguageTool-$LT"
-java_major=$(java -version 2>&1 | sed -n 's/.*version "\([0-9]*\).*/\1/p' | head -1)
+# No java at all makes this pipeline fail; under pipefail that would end the script.
+java_major=$({ java -version 2>&1 || true; } | sed -n 's/.*version "\([0-9]*\).*/\1/p' | head -1)
 if [ "${java_major:-0}" -lt 17 ]; then
   if [ ! -x "$TOOLS/jre/bin/java" ]; then
     printf '  downloading a private Java 21 runtime ...\n'
@@ -159,7 +160,8 @@ ok "report → ~/.local/bin/report;  skill → ~/.claude/skills/report"
 case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) warn "~/.local/bin is not on PATH yet: open a new terminal (or log out and in)";; esac
 
 step "Optional pieces"
-if command -v soffice >/dev/null && python3 -c "import uno" 2>/dev/null; then
+# The system python3 first: conda/pyenv python3 on PATH can't import LibreOffice's uno.
+if command -v soffice >/dev/null && { /usr/bin/python3 -c "import uno" 2>/dev/null || python3 -c "import uno" 2>/dev/null; }; then
   ok "LibreOffice: Word files get a filled-in TOC and a layout check"
 else
   warn "LibreOffice (with python3-uno) not found: Word fills the TOC when it opens the file; everything else works"

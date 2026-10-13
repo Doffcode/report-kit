@@ -29,6 +29,16 @@ BIN = KIT / "bin"
 ENV = {**os.environ, "PATH": f"{BIN}:{os.environ['PATH']}"}
 TEMPLATE = KIT / "templates/report"
 
+
+def uno_python():
+    """A python3 that can import LibreOffice's `uno`. The system one comes first:
+    conda/pyenv put their own python3 first on PATH, and it lacks uno."""
+    for py in ("/usr/bin/python3", shutil.which("python3")):
+        if py and Path(py).exists() and subprocess.run(
+                [py, "-c", "import uno"], capture_output=True).returncode == 0:
+            return py
+    return None
+
 import check  # noqa: E402
 import similarity  # noqa: E402
 import profile as fmt  # noqa: E402
@@ -245,16 +255,15 @@ def build(rdir: Path, final: bool, pdf_only: bool):
         docx_prof, _ = fmt.resolve(load_profile(rdir, cfg), cfg, rdir, "docx")
         docx_fix.fix(out / "report.docx", docx_prof, rdir)
         (rdir / "_build/docx-preview.pdf").unlink(missing_ok=True)
-        has_uno = shutil.which("soffice") and subprocess.run(
-            ["python3", "-c", "import uno"], capture_output=True).returncode == 0
-        if not has_uno:
+        uno_py = shutil.which("soffice") and uno_python()
+        if not uno_py:
             # No LibreOffice here: ask Word to refresh TOC/LOF/LOT when the file is opened.
             docx_fix.update_fields_on_open(out / "report.docx")
             logs += ("\nWARNING LibreOffice (with python3-uno) not found: TOC/LOF/LOT in the DOCX will fill when "
                      "Word opens it (click Yes), and the Word layout check is skipped")
             r = None
         else:
-            r = subprocess.run(["python3", KIT / "lib/lo_refresh.py", out / "report.docx",
+            r = subprocess.run([uno_py, KIT / "lib/lo_refresh.py", out / "report.docx",
                                 rdir / "_build/docx-preview.pdf"], capture_output=True, text=True, timeout=180)
         if r is not None and r.returncode != 0:
             (rdir / "_build/lo-refresh.log").write_text(r.stdout + r.stderr)
