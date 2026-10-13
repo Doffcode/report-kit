@@ -4,6 +4,22 @@ Turns a project into a college-format report (PDF + Word) with one command.
 You write plain content; the build does every bit of layout, so nothing can
 shift, break or go stale when you edit.
 
+## Install (any Ubuntu PC, no sudo)
+
+    # 1. sign in to GitHub (the repo is private); portable gh, no sudo
+    curl -fsSL https://github.com/cli/cli/releases/download/v2.102.0/gh_2.102.0_linux_amd64.tar.gz | tar -xz -C ~
+    ~/gh_2.102.0_linux_amd64/bin/gh auth login        # choose GitHub.com → HTTPS → login with a web browser
+    ~/gh_2.102.0_linux_amd64/bin/gh repo clone Doffcode/report-kit ~/report-kit
+
+    # 2. install everything
+    ~/report-kit/install.sh
+
+It downloads every tool into the kit folder (about 2 GB), installs the fonts,
+the `report` command and the Claude Code skill, then builds a demo report to
+prove it works. Update later with `cd ~/report-kit && git pull && ./install.sh`.
+On a shared lab PC, sign out when you leave: `~/gh_2.102.0_linux_amd64/bin/gh auth logout`
+(and `claude /logout` if you signed in to Claude Code there).
+
 ## Use it
 
     cd ~/Projects/my-project

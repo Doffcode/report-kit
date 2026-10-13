@@ -23,10 +23,17 @@ fetch_tar() {  # url, target dir name inside tools/
   local url="$1" dir="$2"
   if [ -e "$TOOLS/$dir" ]; then ok "$dir (already there)"; return; fi
   printf '  downloading %s ...\n' "${url##*/}"
+  local try
+  for try in 1 2 3; do
+    rm -f "$TOOLS/dl.part"
+    curl -fsSL --retry 3 "$url" -o "$TOOLS/dl.part" && break
+    warn "download attempt $try failed; retrying"; sleep 3
+  done
+  [ -s "$TOOLS/dl.part" ] || die "could not download $url"
   case "$url" in
-    *.zip)    curl -fsSL "$url" -o "$TOOLS/dl.zip" && unzip -q "$TOOLS/dl.zip" -d "$TOOLS" && rm "$TOOLS/dl.zip" ;;
-    *.tar.xz) curl -fsSL "$url" | tar -xJ -C "$TOOLS" ;;
-    *)        curl -fsSL "$url" | tar -xz -C "$TOOLS" ;;
+    *.zip)    mv "$TOOLS/dl.part" "$TOOLS/dl.zip" && unzip -q "$TOOLS/dl.zip" -d "$TOOLS" && rm "$TOOLS/dl.zip" ;;
+    *.tar.xz) tar -xJf "$TOOLS/dl.part" -C "$TOOLS" && rm "$TOOLS/dl.part" ;;
+    *)        tar -xzf "$TOOLS/dl.part" -C "$TOOLS" && rm "$TOOLS/dl.part" ;;
   esac
   [ -e "$TOOLS/$dir" ] || die "download of $dir failed ($url)"
   ok "$dir"
@@ -36,6 +43,9 @@ step "Checking basics"
 [ "$(uname -m)" = "x86_64" ] || die "this installer supports x86_64 Linux only"
 for c in curl tar unzip python3; do command -v "$c" >/dev/null || die "$c is missing (ask the lab admin for: $c)"; done
 ok "curl, tar, unzip, python3 $(python3 -c 'import sys;print(".".join(map(str,sys.version_info[:2])))')"
+free_gb=$(df -Pk "$KIT" | awk 'NR==2 {print int($4/1048576)}')
+[ "${free_gb:-0}" -ge 3 ] || die "only ${free_gb} GB free where the kit lives; it needs about 3 GB (lab PCs often have a home-folder quota: ask for more, or clone the kit to a bigger disk and re-run)"
+ok "${free_gb} GB free"
 
 step "Document tools (Typst, Pandoc, Quarto, D2)"
 fetch_tar "https://github.com/typst/typst/releases/download/v$TYPST/typst-x86_64-unknown-linux-musl.tar.xz" typst-x86_64-unknown-linux-musl
@@ -56,8 +66,15 @@ if [ "${node_major:-0}" -lt 18 ]; then
 else
   ok "system node $(node -v)"
 fi
-if [ ! -x "$KIT/node/node_modules/.bin/mmdc" ]; then
-  (cd "$KIT/node" && npm ci --silent --no-audit --no-fund) || die "npm install of mermaid-cli failed"
+retry() {  # retry a flaky network step 3 times, showing the last error
+  local n=1
+  until "$@" >"$TOOLS/last.log" 2>&1; do
+    [ $n -ge 3 ] && { tail -15 "$TOOLS/last.log"; return 1; }
+    warn "attempt $n failed (network?); retrying"; n=$((n + 1)); sleep 3
+  done
+}
+if [ ! -x "$KIT/node/node_modules/.bin/mmdc" ] || [ ! -d "$HOME/.cache/puppeteer" ]; then
+  (cd "$KIT/node" && retry npm ci --no-audit --no-fund) || die "npm install of mermaid-cli failed (error above)"
 fi
 ln -sf "../node/node_modules/.bin/mmdc" "$BIN/mmdc"
 ok "mermaid-cli"
@@ -71,9 +88,14 @@ if [ ! -x "$KIT/.venv/bin/python" ]; then
     "$HOME/.local/bin/uv" venv -q "$KIT/.venv" && "$HOME/.local/bin/uv" pip install -q --python "$KIT/.venv/bin/python" pip
   fi
 fi
-if ! "$KIT/.venv/bin/pip" install -q -r "$KIT/requirements.txt" 2>/dev/null; then
-  warn "pinned versions don't fit this Python; installing the newest compatible ones"
-  sed 's/==.*//' "$KIT/requirements.txt" | "$KIT/.venv/bin/pip" install -q -r /dev/stdin
+if ! "$KIT/.venv/bin/pip" install -q -r "$KIT/requirements.txt" >"$TOOLS/pip.log" 2>&1; then
+  if grep -qiE "no matching distribution|resolutionimpossible|requires-python|could not find a version" "$TOOLS/pip.log"; then
+    warn "pinned versions don't fit this Python; installing the newest compatible ones"
+    sed 's/==.*//' "$KIT/requirements.txt" | "$KIT/.venv/bin/pip" install -q -r /dev/stdin \
+      || die "Python packages failed to install (see above)"
+  else
+    tail -5 "$TOOLS/pip.log"; die "Python packages failed to install (error above)"
+  fi
 fi
 "$KIT/.venv/bin/python" -c "import matplotlib, pymupdf, docx, yaml, bibtexparser" || die "Python packages failed to install"
 ok "Python packages"
