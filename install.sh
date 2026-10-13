@@ -131,8 +131,11 @@ else
   fi
   if [ -x "$CAB" ] || command -v "$CAB" >/dev/null; then
     for f in times32 arial32; do
-      curl -fsSL "https://downloads.sourceforge.net/corefonts/$f.exe" -o "$TOOLS/cab/$f.exe" \
-        && "$CAB" -q -F '*.ttf' -L -d "$FONTDIR" "$TOOLS/cab/$f.exe" || true
+      for url in "https://downloads.sourceforge.net/corefonts/$f.exe" \
+                 "https://downloads.sourceforge.net/project/corefonts/the%20fonts/final/$f.exe"; do
+        curl -fsSL --retry 4 --retry-all-errors --retry-delay 2 "$url" -o "$TOOLS/cab/$f.exe" && break
+      done
+      [ -s "$TOOLS/cab/$f.exe" ] && "$CAB" -q -F '*.ttf' -L -d "$FONTDIR" "$TOOLS/cab/$f.exe" || true
     done
     fc-cache -f >/dev/null 2>&1 || true
   fi

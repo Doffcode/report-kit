@@ -72,13 +72,29 @@ def stale(src: Path, outs):
     return any(not o.exists() or o.stat().st_mtime < src.stat().st_mtime for o in outs)
 
 
+def diagram_fonts(rdir: Path):
+    """D2 font files for the report's font, via fontconfig: the real font when
+    installed, else its metric-compatible stand-in (Times -> Liberation Serif)."""
+    try:
+        cfg = load_config(rdir)
+        family = (fmt.load(cfg.get("profile", "project"), rdir, cfg.get("format")).get("font") or {}).get(
+            "family", "Times New Roman")
+    except SystemExit:
+        family = "Times New Roman"
+    args = []
+    for flag, style in (("--font-regular", "Regular"), ("--font-bold", "Bold"), ("--font-italic", "Italic")):
+        r = subprocess.run(["fc-match", "-f", "%{file}", f"{family}:style={style}"], capture_output=True, text=True)
+        path = r.stdout.strip()
+        if r.returncode == 0 and path.endswith((".ttf", ".otf")) and Path(path).exists():
+            args += [flag, path]
+    return args
+
+
 def render_diagrams(rdir: Path):
     figs = rdir / "figures"
     figs.mkdir(exist_ok=True)
     mm_cfg = KIT / "styles/mermaid.json"
-    tt = Path.home() / ".local/share/fonts/msttcore"
-    d2_fonts = ["--font-regular", str(tt / "times.ttf"), "--font-bold", str(tt / "timesbd.ttf"),
-                "--font-italic", str(tt / "timesi.ttf")]
+    d2_fonts = diagram_fonts(rdir)
     n = 0
     for src in sorted((rdir / "diagrams").glob("*")):
         svg, png = figs / f"{src.stem}.svg", figs / f"{src.stem}.png"
