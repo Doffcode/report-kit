@@ -14,6 +14,10 @@ mkdir -p "$TOOLS" "$BIN" "$HOME/.local/bin"
 
 TYPST=0.15.1; PANDOC=3.12.1; QUARTO=1.10.19; D2=v0.9.0; LT=6.6; NODE=v20.20.2
 
+# grep -q exits on the first match, which SIGPIPEs fc-list and, under pipefail,
+# turns a found font into a failed check. Read the whole list instead.
+has_font() { fc-list 2>/dev/null | grep -i "$1" >/dev/null; }
+
 step() { printf '\n\033[1m▸ %s\033[0m\n' "$*"; }
 ok()   { printf '  \033[32m✓\033[0m %s\n' "$*"; }
 warn() { printf '  \033[33m!\033[0m %s\n' "$*"; }
@@ -118,7 +122,7 @@ fi
 
 step "Fonts (Times New Roman, Arial; Microsoft's free core fonts)"
 FONTDIR="$HOME/.local/share/fonts/msttcore"
-if fc-list | grep -qi "Times New Roman" && fc-list | grep -qi "Arial"; then
+if has_font "Times New Roman" && has_font "Arial"; then
   ok "already installed"
 else
   mkdir -p "$FONTDIR" "$TOOLS/cab"
@@ -139,7 +143,7 @@ else
     done
     fc-cache -f >/dev/null 2>&1 || true
   fi
-  if fc-list | grep -qi "Times New Roman"; then ok "Times New Roman, Arial"
+  if has_font "Times New Roman"; then ok "Times New Roman, Arial"
   else warn "could not install Times New Roman; reports use Liberation Serif (same letter widths, same page breaks)"; fi
 fi
 
