@@ -1,0 +1,17 @@
+# Shared chart style: IEEE-safe (TrueType fonts embedded, no Type 3)
+pdf.fonttype: 42
+ps.fonttype: 42
+font.family: serif
+font.serif: Times New Roman, Liberation Serif
+font.size: 10
+axes.titlesize: 11
+axes.labelsize: 10
+axes.spines.top: False
+axes.spines.right: False
+axes.grid: True
+grid.alpha: 0.3
+legend.frameon: False
+figure.dpi: 150
+savefig.dpi: 300
+savefig.bbox: tight
+figure.figsize: 6, 3.2

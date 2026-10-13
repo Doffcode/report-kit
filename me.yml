@@ -1,0 +1,17 @@
+# Your details, used on the cover, certificate and declaration of every report.
+# A project can override any field in its own report/me.yml.
+me:
+  name: "Shivansh Sharma"
+  roll: "205225021"
+  degree: "Master of Technology"
+  branch: "Data Analytics"
+  department: "Department of Computer Applications"
+  college: "National Institute of Technology, Tiruchirappalli"
+  logo: "assets/logo.png"          # put the real logo at ~/report-kit/assets/logo.png
+  place: "Tiruchirappalli"
+  guide:
+    name: "Dr K Selvakumar"
+    title: "Assistant Professor, Project Guide"
+  hod:
+    name: "Dr S Dominick"
+    title: "Head of the Department"

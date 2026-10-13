@@ -1,0 +1,77 @@
+# Base format: every setting a profile (or a report's report.yml under `format:`)
+# can override. Text fields use {placeholders} filled from me.yml / report.yml
+# and light markup: *bold*, _italic_. A missing value shows up as a TODO.
+name: Project report
+report_type: A Project Report
+doc_kind: project report            # used in certificate wording
+
+page:
+  paper: a4
+  margin: {left: 1.5in, right: 1in, top: 1in, bottom: 1in}   # wide left = binding
+  numbers: {front: roman, body: arabic, align: center}        # align: center | right
+
+font: {family: Times New Roman, size: 12}
+spacing: 1.5                        # Word-equivalent line spacing: 1.0 | 1.15 | 1.5 | 2.0
+paragraph_after: 6                  # pt of space after each paragraph
+justify: true
+
+chapter:
+  style: block                      # block: "CHAPTER 1" above the title | inline: "1  INTRODUCTION"
+  label: CHAPTER
+  new_page: true
+  upper: true
+headings: {h1: 16, h2: 14, h3: 12}
+captions: {figure: Figure, table: Table}
+front_lists: [toc, lof, lot]        # lof/lot are skipped when there is nothing to list
+abbreviations: true                 # List of Abbreviations from glossary.md
+
+cover:
+  - {text: "{title}", size: 20, bold: true, upper: true}
+  - {space: 0.8cm}
+  - {text: "{report_type}", size: 13, italic: true}
+  - {space: 0.3cm}
+  - {text: "submitted in partial fulfilment of the requirements for the degree of", size: 12}
+  - {text: "*{degree}*", size: 14}
+  - {text: "in {branch}", size: 13}
+  - {space: 1cm}
+  - {text: "Submitted by", size: 12}
+  - {text: "*{name}*", size: 14}
+  - {text: "({roll})", size: 12}
+  - {space: 0.8cm}
+  - {text: "Under the guidance of", size: 12}
+  - {text: "*{guide}*", size: 13}
+  - {text: "{guide_title}", size: 12}
+  - {fill: true}
+  - {logo: 3.2cm}
+  - {space: 0.5cm}
+  - {text: "*{department}*", size: 13}
+  - {text: "*{college}*", size: 15}
+  - {space: 0.3cm}
+  - {text: "{date}", size: 12}
+
+# Front pages between the cover and the acknowledgement, in order.
+pages:
+  - title: Certificate
+    text: >-
+      This is to certify that the {doc_kind} entitled *“{title}”*, submitted by *{name}* ({roll})
+      to the {department}, {college}, is a bonafide record of the work carried out under my
+      supervision in partial fulfilment of the requirements for the award of the degree of
+      {degree}. The contents of this report have not been submitted elsewhere for the award of
+      any degree or diploma.
+    sign: [guide, hod]
+    place_date: true
+  - title: Declaration
+    text: >-
+      I hereby declare that the work presented in this report, entitled *“{title}”*, is my own
+      work carried out under the guidance of {guide}. Where the work of others has been used, it
+      has been duly acknowledged and cited. This report has not been submitted, in part or in
+      full, for any other degree or diploma.
+    sign: [student]
+    place_date: true
+
+# Who can sign, by key used in `sign:`.
+signatories:
+  student: {name: "{name}", role: "{roll}"}
+  guide: {name: "{guide}", role: "{guide_title}"}
+  hod: {name: "{hod}", role: "{hod_title}"}
+  mentor: {name: "{mentor}", role: "{mentor_title}, {company}"}

@@ -1,0 +1,6 @@
+_report.*
+_meta.yml
+_build/
+*_files/
+.quarto/
+figures/.*.done

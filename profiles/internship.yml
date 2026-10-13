@@ -1,0 +1,47 @@
+# Internship / industrial training report. Set `internship:` in report.yml:
+#   internship: {company: ..., place: ..., period: "May–July 2026", mentor: ..., mentor_title: ...}
+# Put the company's certificate scan at assets/internship-certificate.png (or .jpg).
+extends: base
+name: Internship report
+report_type: An Internship Report
+doc_kind: internship report
+cover:
+  - {text: "{title}", size: 20, bold: true, upper: true}
+  - {space: 0.8cm}
+  - {text: "{report_type}", size: 13, italic: true}
+  - {text: "submitted in partial fulfilment of the requirements for the degree of", size: 12}
+  - {text: "*{degree}*", size: 14}
+  - {space: 0.8cm}
+  - {text: "by", size: 12}
+  - {text: "*{name}* ({roll})", size: 14}
+  - {space: 0.8cm}
+  - {text: "Internship carried out at", size: 12}
+  - {text: "*{company}*, {company_place}", size: 14}
+  - {text: "{period}", size: 12}
+  - {space: 0.6cm}
+  - {text: "Industry mentor: *{mentor}*, {mentor_title}", size: 12}
+  - {text: "Faculty guide: *{guide}*, {guide_title}", size: 12}
+  - {fill: true}
+  - {logo: 3.2cm}
+  - {space: 0.5cm}
+  - {text: "*{department}*", size: 13}
+  - {text: "*{college}*", size: 15}
+  - {text: "{date}", size: 12}
+pages:
+  - title: Internship Certificate
+    image: assets/internship-certificate      # .png or .jpg; a TODO page until it exists
+    missing: "Scan of the internship certificate issued by {company}"
+  - title: Certificate
+    text: >-
+      This is to certify that the internship report entitled *“{title}”*, submitted by *{name}*
+      ({roll}), is a bonafide record of the internship carried out at {company}, {company_place},
+      during {period}, in partial fulfilment of the requirements for the degree of {degree}.
+    sign: [guide, hod]
+    place_date: true
+  - title: Declaration
+    text: >-
+      I hereby declare that this report on my internship at {company}, entitled *“{title}”*, is
+      my own work. Information belonging to {company} is included with its permission, and the
+      work of others has been duly acknowledged.
+    sign: [student]
+    place_date: true

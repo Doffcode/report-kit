@@ -1,0 +1,46 @@
+# Master's / PhD thesis.
+extends: base
+name: Thesis
+report_type: A Thesis
+doc_kind: thesis
+cover:
+  - {text: "{title}", size: 20, bold: true, upper: true}
+  - {space: 1cm}
+  - {text: "{report_type}", size: 13, italic: true}
+  - {text: "submitted in partial fulfilment of the requirements for the award of the degree of", size: 12}
+  - {space: 0.3cm}
+  - {text: "*{degree}*", size: 15}
+  - {text: "in", size: 12}
+  - {text: "*{branch}*", size: 14}
+  - {space: 1cm}
+  - {text: "by", size: 12}
+  - {text: "*{name}*", size: 14}
+  - {text: "(Roll No. {roll})", size: 12}
+  - {space: 0.8cm}
+  - {text: "Under the supervision of", size: 12}
+  - {text: "*{guide}*", size: 13}
+  - {text: "{guide_title}", size: 12}
+  - {fill: true}
+  - {logo: 3.5cm}
+  - {space: 0.5cm}
+  - {text: "*{department}*", size: 13}
+  - {text: "*{college}*", size: 15}
+  - {text: "{date}", size: 12}
+pages:
+  - title: Bonafide Certificate
+    text: >-
+      This is to certify that the thesis entitled *“{title}”*, submitted by *{name}* (Roll No.
+      {roll}) to the {college} for the award of the degree of *{degree}* in {branch}, is a
+      bonafide record of the research work carried out by the candidate under my supervision.
+      The contents of this thesis, in full or in parts, have not been submitted to any other
+      institute or university for the award of any degree or diploma.
+    sign: [guide, hod]
+    place_date: true
+  - title: Declaration
+    text: >-
+      I declare that this thesis, entitled *“{title}”*, is a record of original work done by me
+      under the supervision of {guide}. The ideas, data and results of others used in it have
+      been duly acknowledged and cited. I have not submitted this work, in part or in full, for
+      any other degree or diploma, and I have not plagiarised or fabricated any data or results.
+    sign: [student]
+    place_date: true

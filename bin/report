@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Report Kit entry point: report init | build [--final] [--pdf-only] | check | inspect
+KIT="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+exec "$KIT/.venv/bin/python" "$KIT/lib/report.py" "$@"

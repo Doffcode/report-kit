@@ -1,0 +1,24 @@
+# Downloaded by install.sh on each machine
+tools/
+.venv/
+node/node_modules/
+cache/
+
+# Build output
+**/_build/
+**/out/
+**/_report.*
+**/kit-profile.typ
+**/*_files/
+**/.quarto/
+**/figures/.*.done
+**/refs/typst.bib
+**/refs/*.csl
+examples/*/report/figures/
+examples/*/report/assets/kit-*
+spike/
+__pycache__/
+
+# Tool shortcuts are recreated by install.sh
+bin/*
+!bin/report

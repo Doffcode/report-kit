@@ -1,0 +1,17 @@
+# Filled once; reused by every report. Placeholders for the spike.
+me:
+  name: "Your Name"
+  roll: "205124XXX"
+  degree: "Master of Technology"
+  branch: "Data Analytics"
+  department: "Department of Computer Applications"
+  college: "Your College Name"
+  logo: "assets/logo.png"
+  place: "Your City"
+  year: "2026"
+  guide:
+    name: "Dr. Guide Name"
+    title: "Assistant Professor, Project Guide"
+  hod:
+    name: "Dr. HoD Name"
+    title: "Head of the Department"

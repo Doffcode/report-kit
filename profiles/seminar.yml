@@ -1,0 +1,33 @@
+# Seminar / technical-talk report: shorter front matter, plain numbered chapters.
+extends: base
+name: Seminar report
+report_type: A Seminar Report
+doc_kind: seminar report
+chapter: {style: inline, new_page: true, upper: true}
+front_lists: [toc, lof]
+abbreviations: false
+cover:
+  - {text: "{title}", size: 20, bold: true, upper: true}
+  - {space: 0.8cm}
+  - {text: "{report_type}", size: 13, italic: true}
+  - {space: 1cm}
+  - {text: "Submitted by", size: 12}
+  - {text: "*{name}* ({roll})", size: 14}
+  - {text: "{degree}, {branch}", size: 12}
+  - {space: 0.8cm}
+  - {text: "Under the guidance of", size: 12}
+  - {text: "*{guide}*, {guide_title}", size: 12}
+  - {fill: true}
+  - {logo: 3cm}
+  - {space: 0.5cm}
+  - {text: "*{department}*", size: 13}
+  - {text: "*{college}*", size: 15}
+  - {text: "{date}", size: 12}
+pages:
+  - title: Certificate
+    text: >-
+      This is to certify that the seminar report entitled *“{title}”* is a bonafide record of
+      the seminar presented by *{name}* ({roll}) in partial fulfilment of the requirements for
+      the degree of {degree}.
+    sign: [guide]
+    place_date: true

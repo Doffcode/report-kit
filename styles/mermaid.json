@@ -1,0 +1,7 @@
+{
+  "theme": "neutral",
+  "fontFamily": "Times New Roman",
+  "htmlLabels": false,
+  "flowchart": { "htmlLabels": false, "curve": "basis" },
+  "themeVariables": { "fontFamily": "Times New Roman", "fontSize": "16px" }
+}

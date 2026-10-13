@@ -1,0 +1,10 @@
+direction: right
+server: Aggregation Server {shape: rectangle}
+c1: Client 1 {shape: rectangle}
+c2: Client 2 {shape: rectangle}
+c3: Client N {shape: rectangle}
+db: Model Store {shape: cylinder}
+c1 -> server: local update
+c2 -> server: local update
+c3 -> server: local update
+server -> db: global model
