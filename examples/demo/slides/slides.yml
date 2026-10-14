@@ -1,0 +1,8 @@
+# Demo deck: built from the demo report next to it (figures, refs.bib, facts.md, glossary.md are shared).
+title: "Federated Learning on Non-IID Data"
+subtitle: "Project review"
+theme:                    # see `report slides themes` for all styles and palettes
+  style: clean
+  palette: ocean
+cover: college            # logo + college name on top, title, "Presented by" / "Under the guidance of"
+talk_minutes: 10

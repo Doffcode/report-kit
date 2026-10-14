@@ -1,6 +1,6 @@
 ---
 name: report
-description: Make or update a project report (college project report, thesis, internship/seminar report) as PDF + DOCX with the Report Kit at ~/report-kit. Use when the user asks to make, write, build, fix or change a report for a project, or types /report.
+description: Make or update a project report (college project report, thesis, internship/seminar report) as PDF + DOCX, or a slide deck (review/viva, seminar or any talk) as an editable PPTX, with the Report Kit at ~/report-kit. Use when the user asks to make, write, build, fix or change a report or presentation/slides/PPT for a project or paper, or types /report.
 ---
 
 # Report Kit workflow
@@ -88,3 +88,79 @@ PDF with `report style-extract sample.pdf --name <college>`. PDF and DOCX both r
 PDF (master): Typst template `~/report-kit/templates/report/`. Cover/certificate/declaration from me.yml, roman then arabic page numbers, CHAPTER N headings on new pages, per-chapter numbering (Fig. 4.2, (4.1)), floats that never leave half-empty pages or sit above a chapter title, sticky headings, images capped at 70% page height.
 DOCX: reference.docx + `lib/docx_fix.py` (front pages, sections, captions, borders, keep-together, image fit, XML repair) + `lib/lo_refresh.py` (fills TOC/LOF/LOT via LibreOffice).
 If a layout bug appears, fix it in the kit (template, docx_fix, filters) so every report benefits, then add a check to `lib/inspect_layout.py` or `lib/check.py`.
+
+## Slides (editable PPTX)
+
+Same idea as the report: Claude writes plain `slides/slides.md`, `report slides build` does all
+layout into the layouts of a real .pptx, so every title, bullet, table and simple chart stays a
+native PowerPoint object the user can edit (PowerPoint, Google Slides, Canva import).
+
+```
+slides/                (next to report/; report figures, refs.bib, facts.md, glossary.md are reused)
+  slides.yml   title, subtitle, template: kit | <name> | college.pptx, talk_minutes, footer, qa
+  slides.md    "# Part" = section divider, "## Claim as title" = slide, ::: notes ::: = speaker notes
+  diagrams/    slide versions (*.mmd/*.d2): rendered left-to-right, big font. Don't reuse report diagrams as is.
+  charts/      *.py with styles/slides.mplstyle (only when a CSV chart can't express it)
+  data/        CSVs for charts
+  out/         slides.pptx + slides.pdf;  _build/slides.png = every slide at a glance
+```
+
+**Steps.** `report slides init` (or `--from-report` to draft from the report's sections: bullets are
+first sentences, full paragraphs go to notes, titles marked [[TODO]]). Rewrite it into the talk:
+3–4 points a slide, the rest in notes. `report slides build`, read every line, open
+`_build/slides.png` and LOOK at it; fix at the source and rebuild. Before presenting: `--final`
+(TODOs, missing notes, unverified references fail).
+
+**slides.md syntax.** Type is inferred or forced with `{.results} {.two-col} {.image} {.references} {.qa} {.backup}`.
+- bullets → bullet slide; text then `|||` then text/picture → two columns; text + one picture → side by side (wide pictures and equations go below the text automatically)
+- `![Caption.](figures/x)` picture, fitted without cropping; `figures/` of slides/ and report/ are searched
+- `![Caption.](data/acc.csv){type=line|bar|hbar x="Round" y="Accuracy" ymin=0.5}` → native editable chart; columns `<series>_std`/`_err` or `log=y` → matplotlib picture (python-pptx can't draw those)
+- `| pipe | table |` → native table, sized to its content
+- `.results`: `- 0.92 :: FedProx accuracy` → big-number cards
+- `$$ LaTeX $$` → equation picture; short inline `$\mu$` → text (μ)
+- `[@key]` → [n], numbered in order; the `{.references}` slide lists exactly what the slides cite
+- `{.backup}` slides go after the automatic Thank-you/Questions slide, for likely viva questions
+
+**Content rules (checked).** Titles state the claim ("FedProx beats FedAvg on non-IID clients"), not the
+section name ("Results"). ≤ 6 bullets and ≤ 40 words a slide. Numbers from facts.md, abbreviations
+spelled out once, about one content slide per minute of `talk_minutes`, notes on every content slide.
+
+**Look (make every deck look different, not one default).** In slides.yml, `theme:` = style
+(clean | band | sidebar | minimal | bold | soft | geometric) + palette (ocean royal teal forest mint sunset
+crimson berry plum slate earth gold mono, or `primary: "#hex"`) + fonts (classic | serif-titles | formal |
+plain | times); short form `theme: band teal`. Ask the user which they like, or show them
+`report slides themes` (→ _build/themes.png, palettes.png). `cover: college` = logo + college name + title +
+"Presented by" / "Under the guidance of" (from me.yml; several students: `team:`). `cover: x.pptx` copies
+the college's own first slide and fills {{title}} {{name}} {{roll}} {{team}} {{guide}} {{guide_title}}
+{{department}} {{college}} {{date}}. `logo_on_slides: true` puts a small logo on every slide.
+
+**Designs follow content (the user's taste: clean, intentional, no filler decoration).** Write the
+content in the shape that says what it is, and the kit picks the design (build output lists each choice):
+statement paragraph + 2–4 points → lead; ordered list → numerals (process title → steps); `### A` /
+`### B {.win}` → compare with vs and the winner outlined; `### Advantages` / `### Limitations` → ✓/✗;
+3+ `###` groups → columns; picture + 2–4 short bullets → callouts; chart + one sentence → insight
+(takeaway box); `.results` + chart → numbers beside chart; single `**Term**: meaning` → definition;
+"Conclusion" → takeaways; "Future work" → roadmap. Agenda + "you are here" dividers come from `#`
+sections (`agenda: false` to turn off). Literature tables: name a column "Gap" and our row "This work".
+Icons `:name:` (Lucide) only where they clearly match; auto only if every item gets one. Explicit classes:
+lead, lead-cards, numbered, checklist, compare, proscons, columns, callouts, insight, definition,
+takeaways, roadmap.
+
+**Slide designs.** `{.cards}` (`- **Label**: text`), `{.steps}` (process), `{.timeline}` (`- Jan :: text`),
+`{.statement}` (title = the message, optional line under it), `{.quote}` (paragraph + `— who`),
+`{.image-left}`/`{.image-right}`. Per-slide background: `{.dark}` `{.accent}` `{.light}` `{color="#hex"}`
+`{bg="photo.jpg"}`. `variety: auto` (default) turns plain slides into cards/steps/statement/split picture
+where they fit and reports it; use the designs on purpose so the deck has rhythm (not 15 bullet slides).
+
+**Templates.** A college template (when there is a full one): `report slides template-extract college.pptx
+--name <college>` → templates/slides/<college>.pptx + <college>.yml (slide type → layout; READ it once and
+fix wrong guesses), then `template: <college>`. It moves logos/banners pasted on every sample slide onto the
+master and reports missing fonts. Missing slide types fall back to the closest layout; text is kept clear of
+the template's logo and banner.
+
+**Layout guarantees (don't re-implement).** Text is measured with the real font (Calibri ↔ Carlito,
+Cambria ↔ Caladea, Arial ↔ Liberation Sans) and sized to fit with a 10% margin, autofit off; too much
+text is split into "(cont.)" slides with a warning; a font that isn't installed fails the build;
+pictures never crop; diagrams whose text would be < 14 pt are flagged; the rendered PDF is checked for
+text over the footer or off the slide. The LibreOffice preview is close, not exact: before the real
+talk, ask the user to open the deck once in PowerPoint (or PowerPoint for the web / Google Slides).

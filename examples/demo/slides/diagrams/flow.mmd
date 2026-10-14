@@ -1,0 +1,6 @@
+flowchart TD
+  A[Collect local data] --> B[Train local model]
+  B --> C{Converged?}
+  C -- No --> B
+  C -- Yes --> D[Send weights to server]
+  D --> E[Aggregate with FedAvg]

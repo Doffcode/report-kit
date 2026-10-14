@@ -77,7 +77,7 @@ retry() {  # retry a flaky network step 3 times, showing the last error
     warn "attempt $n failed (network?); retrying"; n=$((n + 1)); sleep 3
   done
 }
-if [ ! -x "$KIT/node/node_modules/.bin/mmdc" ] || [ ! -d "$HOME/.cache/puppeteer" ]; then
+if [ ! -x "$KIT/node/node_modules/.bin/mmdc" ] || [ ! -d "$HOME/.cache/puppeteer" ] || [ ! -d "$KIT/node/node_modules/lucide-static" ]; then
   (cd "$KIT/node" && retry npm ci --no-audit --no-fund) || die "npm install of mermaid-cli failed (error above)"
 fi
 ln -sf "../node/node_modules/.bin/mmdc" "$BIN/mmdc"
@@ -101,7 +101,7 @@ if ! "$KIT/.venv/bin/pip" install -q -r "$KIT/requirements.txt" >"$TOOLS/pip.log
     tail -5 "$TOOLS/pip.log"; die "Python packages failed to install (error above)"
   fi
 fi
-"$KIT/.venv/bin/python" -c "import matplotlib, pymupdf, docx, yaml, bibtexparser" || die "Python packages failed to install"
+"$KIT/.venv/bin/python" -c "import matplotlib, pymupdf, docx, pptx, yaml, bibtexparser" || die "Python packages failed to install"
 ok "Python packages"
 
 step "Grammar checker (LanguageTool) and Java"
@@ -148,6 +148,25 @@ else
   else warn "could not install Times New Roman; reports use Liberation Serif (same letter widths, same page breaks)"; fi
 fi
 
+step "Slide fonts (Carlito, Caladea: same letter widths as Calibri and Cambria)"
+# Slides are measured with the template's fonts; Office templates use Calibri/Cambria.
+if has_font "Carlito" && has_font "Caladea"; then
+  ok "already installed"
+else
+  SF="$HOME/.local/share/fonts/crosextra"; mkdir -p "$SF" "$TOOLS/crosextra"
+  (cd "$TOOLS/crosextra" && { apt-get download fonts-crosextra-carlito fonts-crosextra-caladea >/dev/null 2>&1 || true; } \
+    && for d in *.deb; do [ -e "$d" ] && dpkg -x "$d" root; done; true)
+  find "$TOOLS/crosextra/root" -name '*.ttf' -exec cp {} "$SF/" \; 2>/dev/null || true
+  if ! ls "$SF"/Carlito-Regular.ttf >/dev/null 2>&1; then     # not Ubuntu/Debian: Google Fonts copy
+    for f in Carlito-Regular Carlito-Bold Carlito-Italic Carlito-BoldItalic; do
+      curl -fsSL --retry 3 "https://github.com/google/fonts/raw/main/ofl/carlito/$f.ttf" -o "$SF/$f.ttf" || true
+    done
+  fi
+  fc-cache -f >/dev/null 2>&1 || true
+  if has_font "Carlito"; then ok "Carlito, Caladea"
+  else warn "could not install Carlito: decks using Calibri fail their font check until it is installed"; fi
+fi
+
 step "Commands and Claude Code skill"
 [ "$KIT" = "$HOME/report-kit" ] || { [ -e "$HOME/report-kit" ] || ln -s "$KIT" "$HOME/report-kit"; }
 ln -sf "$KIT/bin/report" "$HOME/.local/bin/report"
@@ -173,9 +192,15 @@ step "Self-test: building the demo report"
 DEMO="$(mktemp -d)"; cp -r "$KIT/examples/demo" "$DEMO/"
 if (cd "$DEMO/demo/report" && PATH="$BIN:$PATH" "$BIN/report" build >"$DEMO/log" 2>&1) && [ -s "$DEMO/demo/report/out/report.pdf" ]; then
   ok "demo report built ($(grep -o '[0-9]* pages' "$DEMO/log" | head -1)) — the kit works"
+  if (cd "$DEMO/demo/slides" && PATH="$BIN:$PATH" "$BIN/report" slides build >"$DEMO/deck.log" 2>&1) \
+     && [ -s "$DEMO/demo/slides/out/slides.pptx" ]; then
+    ok "demo deck built ($(grep -o '([0-9]* slides)' "$DEMO/deck.log" | head -1 | tr -d '()'))"
+  else
+    tail -25 "$DEMO/deck.log"; die "slide self-test failed (full log: $DEMO/deck.log)"
+  fi
   rm -rf "$DEMO"
 else
   tail -25 "$DEMO/log"; die "self-test failed (full log: $DEMO/log)"
 fi
 
-printf '\n\033[1mDone.\033[0m In any project: open Claude Code and say "make the report for this project",\nor run:  report init  then  report build\n'
+printf '\n\033[1mDone.\033[0m In any project: open Claude Code and say "make the report for this project",\nor run:  report init  then  report build      (slides: report slides init  then  report slides build)\n'

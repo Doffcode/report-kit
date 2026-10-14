@@ -22,3 +22,4 @@ __pycache__/
 # Tool shortcuts are recreated by install.sh
 bin/*
 !bin/report
+examples/*/slides/figures/

@@ -369,7 +369,27 @@ def main():
     p.add_argument("action", choices=["add", "verify", "review"])
     p.add_argument("queries", nargs="*", help="for add: titles, DOIs or arXiv ids")
     p.add_argument("--fix", action="store_true", help="for verify: replace wrong fields with the real record")
+    p = sub.add_parser("slides", help="slide deck: init | build | themes | template-extract")
+    p.add_argument("action", choices=["init", "build", "themes", "template-extract"])
+    p.add_argument("arg", nargs="?", help="init: folder (default slides); template-extract: the .pptx")
+    p.add_argument("--final", action="store_true")
+    p.add_argument("--from-report", action="store_true", help="init: draft slides.md from ../report")
+    p.add_argument("--name", help="template-extract: template name, e.g. nitt")
     a = ap.parse_args()
+
+    if a.cmd == "slides":
+        import deck
+        if a.action == "init":
+            return deck.init(Path(a.arg or "slides"), from_report=a.from_report)
+        if a.action == "template-extract":
+            import deck_template
+            if not a.arg or not a.name:
+                sys.exit("usage: report slides template-extract college.pptx --name nitt")
+            return deck_template.main(Path(a.arg), a.name)
+        if a.action == "themes":                    # gallery of styles and palettes, to choose from
+            here = next((d for d in (Path.cwd(), Path.cwd() / "slides") if (d / "slides.yml").exists()), None)
+            return deck.themes_gallery(here / "_build" if here else Path.cwd())
+        sys.exit(0 if deck.build(deck.find_slides_dir(Path.cwd()), a.final) else 1)
 
     if a.cmd == "init":
         return init(Path(a.dir), a.profile)
